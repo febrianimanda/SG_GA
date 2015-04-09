@@ -1,7 +1,7 @@
 from random import *
 
 nPop = 10
-gen = 8
+nGen = 8
 
 def decoding(binary): #decode binary to decimal
 	x = int(binary[:4],2)
@@ -21,7 +21,7 @@ def fungsi(x,y): #problem
 
 def parentSelection(fitnessPopulation, rand): #seleksi orangtua
 	total = 0
-	for a in range(10):
+	for a in range(nPop):
 		total += fitnessPopulation[a]
 		if(total > rand):
 			return a
@@ -36,23 +36,45 @@ def crossOver(par): #fungsi crossover
 	child2 = par[b][titik[0]:titik[1]] + par[b][titik[2]:] + par[a][:titik[0]] + par[a][titik[1]:titik[2]]
 	return [child1, child2]
 
-#inisialisasi populasi
-pop = [[randint(0,1) for x in range(gen)] for y in range(nPop)]
+def fitnessing(population): #fungsi melakukan fitness
+	gen = []
+	for a in range(nPop):
+		conv = "".join(map(str,population[a]))
+		bil = decoding(conv)
+		gen.append(fitnes(fungsi(bil[0], bil[1])))
+	return gen;
 
+def rouletteWheel(generation, population):
+	selected = []
+	while len(selected) < 2 :
+		n = uniform(min(generation), sum(generation))
+		selected.append(population[parentSelection(generation,n)])
+	return selected
+
+def mutation(kromosom, L, N):
+	for i in range(L):
+		pm = uniform(1/float(L), 1/float(N*L))
+		rand = uniform(0,1)
+		if (rand < pm) :
+			kromosom[i] = 1 - kromosom[i]
+	return kromosom
+
+
+
+#inisialisasi populasi
+pop = [[randint(0,1) for x in range(nGen)] for y in range(nPop)]
 
 #fitness populasi
-genFit = []
-for a in range(10):
-	conv = "".join(map(str,pop[a]))
-	bil = decoding(conv)
-	genFit.append(fitnes(fungsi(bil[0], bil[1])))
+genFit = fitnessing(pop)
 
 #seleksi orang tua
-parent = []
-while len(parent) < 2: #roulette-wheel
-	n = uniform(min(genFit),sum(genFit))
-	parent.append(pop[parentSelection(genFit,n)])
+parent = rouletteWheel(genFit, pop)
 
 #crossover
 child = crossOver(parent)
+print child
+
+#mutation
+child[0] = mutation(child[0],nGen,nPop)
+child[1] = mutation(child[1],nGen,nPop)
 print child
